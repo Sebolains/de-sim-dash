@@ -129,7 +129,7 @@ def build_and_run():
         st.altair_chart(cs[0] & cs[1])
 
     # Info and Copyright
-    st.markdown("Find source code in [github](https://github.com/Sebolains/de-sim-dash/)")
+    st.markdown("Find source code on [github](https://github.com/Sebolains/de-sim-dash/)")
     st.text("© 2021, Sebastian Maurino")
 
 
