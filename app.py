@@ -133,6 +133,7 @@ def build_and_run():
     st.text("© 2021, Sebastian Maurino")
 
 
+@st.cache(hash_funcs={spk.SpekPy.Spek: lambda s: (s.state.get_current_state_str('minimal'))})
 def calc_detector_signal(spectrum: spk.Spek, scint: str, t: float, a: float) -> un.ufloat:
     """
     Calculates the detector pixel signal and variance given a spectrum and scintillator properties
