@@ -98,28 +98,36 @@ def build_and_run():
                 'thickness': [i * sim['inserts'][tissue]['step'] for i in range(len(de))],
                 'signal': [v.n for v in de],
                 'contrast': [v.n - de[0].n for v in de],
-                'cnr': [(v.n - de[0].n) / v.s for v in de],
+                'cnr': [(v.n - de[0].n) / np.sqrt(v.s**2 + de[0].s**2) for v in de],
             })
 
-    # Plots
-    cs = []
-    for img in sim['inserts'].keys():
-        c1 = alt.Chart(dfs[(img, 'soft')]).mark_line(color='#5276A7').encode(
-            alt.X('feature', title='Feature #', ),
-            alt.Y('contrast', title='Soft Feature Contrast', axis=alt.Axis(titleColor='#5276A7'))
-        )
-        c2 = alt.Chart(dfs[(img, 'hard')]).mark_line(color='#57A44C').encode(
-            alt.X('feature', title='Feature #'),
-            alt.Y('contrast', title='Hard Feature Contrast', axis=alt.Axis(titleColor='#57A44C'))
-        )
-        c = alt.layer(c1, c2).resolve_scale(y='independent').properties(
-            title="Contrast in %s-Tissue Subtracted Image" % img,
-            width=500
-        )
-        cs.append(c)
-    st.altair_chart(cs[0] & cs[1])
+    # Show Raw Data
+    with st.beta_expander("Show Simulation Data..."):
+        for comb in dfs.keys():
+            st.subheader("{1} features in {0}-subtracted image".format(*comb))
+            dfs[comb]
+    st.text("")  #spacing
 
-    # Copyright
+    # Plots
+    for plot in ['contrast', 'cnr']:
+        cs = []
+        for img in sim['inserts'].keys():
+            c1 = alt.Chart(dfs[(img, 'soft')]).mark_line(color='#5276A7').encode(
+                alt.X('feature', title='Feature #', ),
+                alt.Y('contrast', title='Soft Feature Contrast', axis=alt.Axis(titleColor='#5276A7'))
+            )
+            c2 = alt.Chart(dfs[(img, 'hard')]).mark_line(color='#57A44C').encode(
+                alt.X('feature', title='Feature #'),
+                alt.Y('contrast', title='Hard Feature Contrast', axis=alt.Axis(titleColor='#57A44C'))
+            )
+            c = alt.layer(c1, c2).resolve_scale(y='independent').properties(
+                title="%s in %s-tissue-subtracted image" % (plot, img),
+                width=500
+            )
+            cs.append(c)
+        st.altair_chart(cs[0] & cs[1])
+
+    # Info and Copyright
     st.markdown("Find source code in [github](https://github.com/Sebolains/de-sim-dash/)")
     st.text("© 2021, Sebastian Maurino")
 
