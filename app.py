@@ -97,6 +97,7 @@ def build_and_run():
                 'feature': range(len(de)),
                 'thickness': [i * sim['inserts'][tissue]['step'] for i in range(len(de))],
                 'signal': [v.n for v in de],
+                'noise': [v.s for v in de],
                 'contrast': [v.n - de[0].n for v in de],
                 'cnr': [(v.n - de[0].n) / np.sqrt(v.s**2 + de[0].s**2) for v in de],
             })
@@ -114,11 +115,11 @@ def build_and_run():
         for img in sim['inserts'].keys():
             c1 = alt.Chart(dfs[(img, 'soft')]).mark_line(color='#5276A7').encode(
                 alt.X('feature', title='Feature #', ),
-                alt.Y('contrast', title='Soft Feature Contrast', axis=alt.Axis(titleColor='#5276A7'))
+                alt.Y(plot, title='Soft Feature Contrast', axis=alt.Axis(titleColor='#5276A7'))
             )
             c2 = alt.Chart(dfs[(img, 'hard')]).mark_line(color='#57A44C').encode(
                 alt.X('feature', title='Feature #'),
-                alt.Y('contrast', title='Hard Feature Contrast', axis=alt.Axis(titleColor='#57A44C'))
+                alt.Y(plot, title='Hard Feature Contrast', axis=alt.Axis(titleColor='#57A44C'))
             )
             c = alt.layer(c1, c2).resolve_scale(y='independent').properties(
                 title="%s in %s-tissue-subtracted image" % (plot, img),
