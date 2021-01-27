@@ -21,7 +21,7 @@ def build_and_run():
     st.markdown("This is a first-order simulation of image quality metrics for X-ray Dual-Energy images.")
     st.info("Use the sidebar to modify simulation parameters")
 
-    # Sidebar
+    # Sidebar: Loads simulation parameters into sim dictionary
     mats = spk.IO.get_matls()[1]
     sim = {}
 
@@ -38,12 +38,12 @@ def build_and_run():
     sim['det'] = {}
     sim['det']['mat'] = st.sidebar.selectbox(label="Scintillator Material", options=mats, index=mats.index("Cesium Iodide"))
     col1, col2 = st.sidebar.beta_columns(2)
-    sim['det']['t'] = col1.number_input(label="Scint. Thickness (μm)", value=600, min_value=100, max_value=2000, step=50)
+    sim['det']['t'] = col1.number_input(label="Scint. Thickness (μm)", value=500, min_value=100, max_value=2000, step=50)
     sim['det']['a'] = col2.number_input(label="Pixel Aperature (μm)", value=100, min_value=10, max_value=500, step=10)
 
     st.sidebar.subheader("Phantom Base")
     sim['base'] = [{}, {}]
-    sim['base'][0]['mat'] = st.sidebar.selectbox(label="Base Material 1", options=mats, index=mats.index("Polyethylene Terephthalate (Mylar)"))
+    sim['base'][0]['mat'] = st.sidebar.selectbox(label="Base Material 1", options=mats, index=mats.index("Polymethyl Methacrylate (Lucite Perspex or Plexiglas)"))
     sim['base'][1]['mat'] = st.sidebar.selectbox(label="Base Material 2", options=mats, index=mats.index("Aluminum Alloy (Type 6061)"))
     col1, col2 = st.sidebar.beta_columns(2)
     sim['base'][0]['t'] = col1.number_input(label="Base 1 Thickness (mm)", value=73., min_value=0., max_value=500., step=0.1, format="%.1f")
@@ -52,9 +52,9 @@ def build_and_run():
     st.sidebar.subheader("Phantom Inserts")
     sim['inserts'] = {'soft': {}, 'hard': {}}
 
-    sim['inserts']['soft']['mat'] = st.sidebar.selectbox(label="Soft Insert Material", options=mats, index=mats.index("Polyethylene Terephthalate (Mylar)"))
+    sim['inserts']['soft']['mat'] = st.sidebar.selectbox(label="Soft Insert Material", options=mats, index=mats.index("Polymethyl Methacrylate (Lucite Perspex or Plexiglas)"))
     col1, col2 = st.sidebar.beta_columns(2)
-    sim['inserts']['soft']['step'] = col1.number_input(label="Soft Step (mm)", value=2.5, min_value=0.5, max_value=10., step=0.5, format="%.1f")
+    sim['inserts']['soft']['step'] = col1.number_input(label="Soft Step (mm)", value=2.0, min_value=0.5, max_value=10., step=0.5, format="%.1f")
     sim['inserts']['soft']['count'] = col2.number_input(label="Soft Features Count", value=5, min_value=2, max_value=11)
 
     sim['inserts']['hard']['mat'] = st.sidebar.selectbox(label="Hard Insert Material", options=mats, index=mats.index("Aluminum Alloy (Type 6061)"))
@@ -63,7 +63,7 @@ def build_and_run():
     sim['inserts']['hard']['count'] = col2.number_input(label="Hard Features Count", value=5, min_value=2, max_value=11)
 
     # Calculations
-    # Get pixel signal and variance for all exposures and phantom inserts
+    # 1) Get pixel signal and variance for all exposures and phantom inserts
     signals = []
     for exp in sim['exp']:
         # Create input spectrum
@@ -85,7 +85,7 @@ def build_and_run():
             )
         signals.append(signal)
 
-    # Get the Dual-Energy signals and store them in data frames
+    # 2) Get the Dual-Energy signals and store them in data frames
     dfs = {}
     for tissue in sim['inserts'].keys():
         central = (sim['inserts'][tissue]['count']+1) // 2
@@ -119,6 +119,8 @@ def build_and_run():
         cs.append(c)
     st.altair_chart(cs[0] & cs[1])
 
+    # Copyright
+    st.markdown("Find source code in [github](https://github.com/Sebolains/de-sim-dash/)")
     st.text("© 2021, Sebastian Maurino")
 
 
