@@ -65,10 +65,14 @@ def build_and_run():
     # Calculations
     # 1) Get pixel signal and variance for all exposures and phantom inserts
     signals = []
+    X = 0  # total air kerma
     for exp in sim['exp']:
         # Create input spectrum
         spec = spk.Spek(kvp=exp['kVp'], z=sim['SID'], mas=exp['mAs'])
         spec.filter('Al', 1.6)  # fixed intrinsic filtration
+
+        # Air Kerma calculation
+        X += spec.get_kerma(norm=False)
 
         # Phantom filtration
         for base in sim['base']:
@@ -101,8 +105,9 @@ def build_and_run():
                 'contrast': [v.n - de[0].n for v in de],
                 'cnr': [(v.n - de[0].n) / np.sqrt(v.s**2 + de[0].s**2) for v in de],
             })
+            dfs[(img, tissue)]['cnr/√X'] = dfs[(img, tissue)]['cnr'] / np.sqrt(X)
 
-    # Show Raw Data
+            # Show Raw Data
     with st.beta_expander("Show Simulation Data..."):
         for comb in dfs.keys():
             st.subheader("{1} features in {0}-subtracted image".format(*comb))
@@ -110,7 +115,7 @@ def build_and_run():
     st.text("")  #spacing
 
     # Plots
-    for plot in ['contrast', 'cnr']:
+    for plot in ['contrast', 'cnr', 'cnr/√X']:
         cs = []
         for img in sim['inserts'].keys():
             c1 = alt.Chart(dfs[(img, 'soft')]).mark_line(color='#5276A7').encode(
@@ -140,7 +145,7 @@ def calc_detector_signal(spectrum: spk.Spek, scint: str, t: float, a: float) -> 
     
     :param spectrum: spekpy Spek object containing input spectrum
     :param scint: Name of scintillator material
-    :param t: Thickness of the scintillator [mm]
+    :param t: Thickness of the scintillator [μm]
     :param a: Pixel aperature (or length of square pixel side) [μm]
     :return: ufloat absorbed energy in pixel with spatial variance
     """
